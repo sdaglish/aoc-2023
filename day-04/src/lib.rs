@@ -10,21 +10,63 @@ pub fn card_points(input: &str) -> u32 {
     let winning_numbers = input.split(":").collect::<Vec<_>>()[1]
         .split('|')
         .collect::<Vec<_>>()[0];
+    dbg!(&winning_numbers);
     let card_number = input.split(":").collect::<Vec<_>>()[1]
         .split('|')
         .collect::<Vec<_>>()[1];
+    dbg!(&card_number);
 
     let mut sum = 0;
 
-    for number in winning_numbers.split_whitespace() {
-        if card_number.contains(number) {
+    let card_number: Vec<_> = card_number
+        .split_whitespace()
+        .map(|number| number.parse::<u32>().unwrap())
+        .collect();
+    let winning_numbers: Vec<_> = winning_numbers
+        .split_whitespace()
+        .map(|number| number.parse::<u32>().unwrap())
+        .collect();
+    dbg!(&card_number);
+    dbg!(&winning_numbers);
+
+    for number in card_number {
+        if winning_numbers.contains(&number) {
+            println!("{} is a winning number", number);
             if sum == 0 {
                 sum = 1;
             } else {
                 sum *= 2;
             }
+        } else {
+            println!("{} is not a winning number", number);
         }
     }
+
+    // for number in card_number {
+    //     if winning_numbers.contains(number) {
+    //         println!("{} is a winning number", number);
+    //         if sum == 0 {
+    //             sum = 1;
+    //         } else {
+    //             sum *= 2;
+    //         }
+    //     } else {
+    //         println!("{} is not a winning number", number);
+    //     }
+    // }
+    // for number in card_number.split_whitespace() {
+    //     dbg!(&number);
+    //     if winning_numbers.contains(number) {
+    //         println!("{} is a winning number", number);
+    //         if sum == 0 {
+    //             sum = 1;
+    //         } else {
+    //             sum *= 2;
+    //         }
+    //     } else {
+    //         println!("{} is not a winning number", number);
+    //     }
+    // }
 
     return sum;
 }
