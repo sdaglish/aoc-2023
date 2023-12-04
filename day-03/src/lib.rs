@@ -1,3 +1,4 @@
+use core::num;
 use std::{collections::HashMap, thread::current, vec};
 
 pub fn process_part1(input: &str) -> u32 {
@@ -6,7 +7,7 @@ pub fn process_part1(input: &str) -> u32 {
     let mut numbers: Vec<(u32, u32, u32)> = vec![];
     let mut sum = 0;
     input.lines().enumerate().for_each(|(i, line)| {
-        let line_numbers = (get_numbers(line));
+        let line_numbers = get_numbers(line);
         dbg!(&line_numbers);
         for (number, mut start, mut end) in line_numbers {
             dbg!(number, start, end);
@@ -57,7 +58,7 @@ pub fn process_part1(input: &str) -> u32 {
             }
 
             /* Checking the numbers below (with the diagonals) */
-            if (i < (input.lines().count() - 1)) {
+            if i < (input.lines().count() - 1) {
                 let below_line = input.lines().nth(i + 1).unwrap();
 
                 let start_char = match start {
@@ -89,7 +90,148 @@ pub fn process_part1(input: &str) -> u32 {
 }
 
 pub fn process_part2(input: &str) -> u32 {
-    0
+    let numbers: Vec<_> = input.lines().map(|line| get_numbers(line)).collect();
+
+    let mut sum = 0;
+    // println!("{:?}", numbers);
+
+    /* Looping through all the lines, as and looking for a '*' symbol */
+    for (i, line) in input.lines().enumerate() {
+        for (j, c) in line.chars().enumerate() {
+            if c == '*' {
+                let mut adjacent_number = 0;
+                let mut adjacent_sum = 1;
+                /* Look around for a number */
+                /* Checking to the left */
+                if j > 0 {
+                    for (number, start, end) in &numbers[i] {
+                        if (j as u32) == *end + 1 {
+                            // println!("Number to the left {} {} {}", number, start, end);
+                            adjacent_number += 1;
+                            adjacent_sum *= number;
+                            // println!(
+                            //     "lef adjacent_number {} adjacent_sum {}",
+                            //     adjacent_number, adjacent_sum
+                            // );
+                            break;
+                        }
+                    }
+                }
+
+                /* Checking to the right */
+                if j < (line.len() - 1) {
+                    for (number, start, end) in &numbers[i] {
+                        if *start != 0 {
+                            if (j as u32) == *start - 1 {
+                                adjacent_number += 1;
+                                adjacent_sum *= number;
+                                // println!(
+                                //     "right adjacent_number {} adjacent_sum {}",
+                                //     adjacent_number, adjacent_sum
+                                // );
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                /* Checking above */
+                if i > 0 {
+                    for (number, start, end) in &numbers[i - 1] {
+                        if (j as u32 >= *start) && (j as u32 <= *end) {
+                            adjacent_number += 1;
+                            adjacent_sum *= number;
+                            // println!("number {} start {} end {}", number, start, end);
+                            // println!(
+                            //     "Number above adjacent_number {} adjacent_sum {}",
+                            //     adjacent_number, adjacent_sum
+                            // );
+                            break;
+                        }
+
+                        /* Checking diagonals */
+                        if j > 0 {
+                            if (j - 1) as u32 == *end {
+                                adjacent_number += 1;
+                                adjacent_sum *= number;
+                                // println!("number {} start {} end {}", number, start, end);
+                                // println!(
+                                //     "Number above adjacent_number {} adjacent_sum {}",
+                                //     adjacent_number, adjacent_sum
+                                // );
+                                // break;
+                            }
+                        }
+                        if j < (line.len() - 1) {
+                            if (j + 1) as u32 == *start {
+                                adjacent_number += 1;
+                                adjacent_sum *= number;
+                                // println!("number {} start {} end {}", number, start, end);
+                                // println!(
+                                //     "Number above adjacent_number {} adjacent_sum {}",
+                                //     adjacent_number, adjacent_sum
+                                // );
+                                // break;
+                            }
+                        }
+                    }
+                }
+
+                /* Checking below */
+                if i < (input.lines().count() - 1) {
+                    for (number, start, end) in &numbers[i + 1] {
+                        /* Directly below */
+                        if (j as u32 >= *start) && (j as u32 <= *end) {
+                            adjacent_number += 1;
+                            adjacent_sum *= number;
+                            println!("number {} start {} end {}", number, start, end);
+                            println!(
+                                "Number below adjacent_number {} adjacent_sum {}",
+                                adjacent_number, adjacent_sum
+                            );
+                            break;
+                        }
+
+                        /* Checking diagonals */
+                        if j > 0 {
+                            if (j - 1) as u32 == *end {
+                                adjacent_number += 1;
+                                adjacent_sum *= number;
+                                // println!("number {} start {} end {}", number, start, end);
+                                // println!(
+                                //     "Number above adjacent_number {} adjacent_sum {}",
+                                //     adjacent_number, adjacent_sum
+                                // );
+                                // break;
+                            }
+                        }
+                        if j < (line.len() - 1) {
+                            if (j + 1) as u32 == *start {
+                                adjacent_number += 1;
+                                adjacent_sum *= number;
+                                // println!("number {} start {} end {}", number, start, end);
+                                // println!(
+                                //     "Number above adjacent_number {} adjacent_sum {}",
+                                //     adjacent_number, adjacent_sum
+                                // );
+                                // break;
+                            }
+                        }
+                    }
+                }
+
+                if adjacent_number >= 2 {
+                    sum += adjacent_sum;
+                }
+                // println!(
+                //     "adjacent_number {} adjacent_sum {}",
+                //     adjacent_number, adjacent_sum
+                // );
+            }
+        }
+    }
+
+    return sum;
 }
 
 fn get_numbers(input: &str) -> Vec<(u32, u32, u32)> {
@@ -139,39 +281,6 @@ mod tests {
     fn test_get_numbers(#[case] input: &str, #[case] expected: Vec<(u32, u32, u32)>) {
         assert_eq!(get_numbers(input), expected);
     }
-    // #[case("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green", true)]
-    // #[case(
-    //     "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue",
-    //     true
-    // )]
-    // #[case(
-    //     "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
-    //     false
-    // )]
-    // #[case(
-    //     "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
-    //     false
-    // )]
-    // #[case("Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green", true)]
-    // fn game_is_possible(#[case] input: &str, #[case] expected: bool) {
-    //     assert_eq!(calculate_game_is_possible(input), expected);
-    // }
-
-    // #[rstest]
-    // #[case("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green", 48)]
-    // #[case("Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue", 12)]
-    // #[case(
-    //     "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
-    //     1560
-    // )]
-    // #[case(
-    //     "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
-    //     630
-    // )]
-    // #[case("Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green", 36)]
-    // fn fewest_cubes(#[case] input: &str, #[case] expected: u32) {
-    //     assert_eq!(calculate_fewest_cubes(input), expected);
-    // }
 
     const INPUT: &str = "467..114..
 ...*......
@@ -195,6 +304,6 @@ mod tests {
     #[test]
     fn part2() {
         let result = process_part2(INPUT);
-        assert_eq!(result, 2286);
+        assert_eq!(result, 467835);
     }
 }
