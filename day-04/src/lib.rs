@@ -1,9 +1,80 @@
+use std::collections::VecDeque;
+
 pub fn process_part1(input: &str) -> u32 {
     input.lines().map(|line| card_points(line)).sum()
 }
 
 pub fn process_part2(input: &str) -> u32 {
-    0
+    /* Stack of all the scratch cards */
+    /* Originally put all the current cards on the stack */
+    let original_cards = input.lines().collect::<Vec<_>>();
+    let mut card_stack_usage = vec![0; original_cards.len()];
+
+    let winning_number_vec: Vec<(u33, u32)> = input
+        .lines()
+        .map(|line| {
+            let winning_numbers = line.split(":").collect::<Vec<_>>()[1]
+                .split('|')
+                .collect::<Vec<_>>()[0];
+            let card_number = line.split(":").collect::<Vec<_>>()[1]
+                .split('|')
+                .collect::<Vec<_>>()[1];
+
+            let card_number: Vec<_> = card_number
+                .split_whitespace()
+                .map(|number| number.parse::<u32>().unwrap())
+                .collect();
+            let winning_numbers: Vec<_> = winning_numbers
+                .split_whitespace()
+                .map(|number| number.parse::<u32>().unwrap())
+                .collect();
+
+            let number = line.split(":").collect::<Vec<_>>()[0]
+                .split_whitespace()
+                .collect::<Vec<_>>()[1]
+                .parse::<u32>()
+                .unwrap();
+
+            let mut sum = 0;
+            for number in card_number {
+                if winning_numbers.contains(&number) {
+                    // println!("{} is a winning number", number);
+                    sum += 1;
+                } else {
+                    // println!("{} is not a winning number", number);
+                }
+            }
+
+            (number, sum)
+        })
+        .collect::<Vec<(u32, u32)>>();
+
+    // dbg!(&winning_number_vec);
+
+    let mut card_stack = winning_number_vec.iter().collect::<VecDeque<&(u32, u32)>>();
+    // dbg!(&card_stack);
+
+    // dbg!(&card_stack);
+
+    while card_stack.len() > 0 {
+        let card = card_stack.pop_front().unwrap();
+        // dbg!(&card);
+
+        let winning_numbers = card.1;
+        let card_number = card.0;
+
+        card_stack_usage[card_number as usize - 1] += 1;
+
+        for i in 0..winning_numbers {
+            let card_to_push = i + card_number;
+            // println!("Pushing card {} to the back", card_to_push);
+            let next_card = winning_number_vec[card_to_push as usize];
+            let (number, sum) = (next_card.0, next_card.1);
+            card_stack.push_back(&winning_number_vec[card_to_push as usize]);
+        }
+    }
+
+    return card_stack_usage.iter().sum();
 }
 
 pub fn card_points(input: &str) -> u32 {
@@ -31,42 +102,16 @@ pub fn card_points(input: &str) -> u32 {
 
     for number in card_number {
         if winning_numbers.contains(&number) {
-            println!("{} is a winning number", number);
+            // println!("{} is a winning number", number);
             if sum == 0 {
                 sum = 1;
             } else {
                 sum *= 2;
             }
         } else {
-            println!("{} is not a winning number", number);
+            // println!("{} is not a winning number", number);
         }
     }
-
-    // for number in card_number {
-    //     if winning_numbers.contains(number) {
-    //         println!("{} is a winning number", number);
-    //         if sum == 0 {
-    //             sum = 1;
-    //         } else {
-    //             sum *= 2;
-    //         }
-    //     } else {
-    //         println!("{} is not a winning number", number);
-    //     }
-    // }
-    // for number in card_number.split_whitespace() {
-    //     dbg!(&number);
-    //     if winning_numbers.contains(number) {
-    //         println!("{} is a winning number", number);
-    //         if sum == 0 {
-    //             sum = 1;
-    //         } else {
-    //             sum *= 2;
-    //         }
-    //     } else {
-    //         println!("{} is not a winning number", number);
-    //     }
-    // }
 
     return sum;
 }
@@ -105,6 +150,6 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
     #[test]
     fn part2() {
         let result = process_part2(INPUT);
-        assert_eq!(result, 467835);
+        assert_eq!(result, 30);
     }
 }
